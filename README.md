@@ -34,7 +34,7 @@ Ein modernes Web-Interface zum Herunterladen von SoundCloud-Tracks als MP3-Datei
 
 ```bash
 # Repository klonen
-git clone https://github.com/yourusername/scloud-downloader.git
+git clone https://github.com/Boolty/scloud-downloader.git
 cd scloud-downloader
 
 # Mit Docker Compose starten
