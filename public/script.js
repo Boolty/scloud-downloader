@@ -70,12 +70,36 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
+        // Show loading state
+        showStatus('📡 Lade Track-Informationen...', 'info');
+        
+        // Get track info first
+        let trackInfo = null;
+        try {
+            const infoResponse = await fetch('/api/track-info', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ url: url })
+            });
+            
+            if (infoResponse.ok) {
+                trackInfo = await infoResponse.json();
+            }
+        } catch (error) {
+            console.log('Could not fetch track info:', error);
+        }
+
         // Add to queue
         const queueItem = {
             id: ++queueIdCounter,
             url: url,
             status: 'pending',
-            title: null,
+            title: trackInfo ? trackInfo.fullTitle : null,
+            artist: trackInfo ? trackInfo.uploader : null,
+            songTitle: trackInfo ? trackInfo.title : null,
+            duration: trackInfo ? trackInfo.duration : null,
             filename: null,
             error: null
         };
@@ -87,7 +111,8 @@ document.addEventListener('DOMContentLoaded', function() {
         updateDownloadCompletedButton();
         
         urlInput.value = '';
-        showStatus(`✅ URL zur Warteschlange hinzugefügt!`, 'success');
+        const trackName = trackInfo ? trackInfo.fullTitle : 'Track';
+        showStatus(`✅ "${trackName}" zur Warteschlange hinzugefügt!`, 'success');
     });
 
     // Download all button
@@ -210,7 +235,12 @@ document.addEventListener('DOMContentLoaded', function() {
         queueList.innerHTML = downloadQueue.map(item => `
             <div class="queue-item ${item.status}" data-id="${item.id}">
                 <div class="queue-item-info">
-                    <div class="queue-item-url">${item.url}</div>
+                    ${item.title ? `
+                        <div class="queue-item-title">${item.title}</div>
+                        <div class="queue-item-url">${item.url}</div>
+                    ` : `
+                        <div class="queue-item-url">${item.url}</div>
+                    `}
                     <div class="queue-item-status ${item.status}">
                         ${getStatusText(item)}
                     </div>

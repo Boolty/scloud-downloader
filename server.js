@@ -58,7 +58,7 @@ async function downloadSoundCloudTrack(url, progressCallback = null) {
         
         const [title, uploader, duration] = infoOutput.trim().split('|');
         const sanitizedTitle = sanitizeFilename(`${uploader} - ${title}`);
-        const filename = `${Date.now()}_${sanitizedTitle}.mp3`;
+        const filename = `${sanitizedTitle}.mp3`;
         const filepath = path.join(downloadsDir, filename);
         
         if (progressCallback) progressCallback(30, 'Starte Download...');
@@ -125,6 +125,40 @@ async function downloadSoundCloudTrack(url, progressCallback = null) {
         throw new Error(`Download failed: ${error.message}`);
     }
 }
+
+// Get track info without downloading
+app.post('/api/track-info', async (req, res) => {
+    const { url } = req.body;
+    
+    if (!url) {
+        return res.status(400).json({ error: 'URL ist erforderlich' });
+    }
+    
+    if (!url.includes('soundcloud.com')) {
+        return res.status(400).json({ error: 'Nur SoundCloud URLs sind erlaubt' });
+    }
+    
+    try {
+        const infoCommand = `yt-dlp --print "%(title)s|%(uploader)s|%(duration)s" "${url}"`;
+        const { stdout: infoOutput } = await execAsync(infoCommand);
+        
+        const [title, uploader, duration] = infoOutput.trim().split('|');
+        
+        res.json({
+            success: true,
+            title: title,
+            uploader: uploader,
+            duration: duration,
+            fullTitle: `${uploader} - ${title}`
+        });
+        
+    } catch (error) {
+        console.error('Track Info Error:', error.message);
+        res.status(500).json({ 
+            error: 'Konnte Track-Informationen nicht abrufen.' 
+        });
+    }
+});
 
 // API Routes
 app.post('/api/download', async (req, res) => {
