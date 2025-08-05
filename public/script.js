@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', function() {
     updateDownloadCompletedButton();
 
     // Add to queue form
-    addToQueueForm.addEventListener('submit', function(e) {
+    addToQueueForm.addEventListener('submit', async function(e) {
         e.preventDefault();
         
         const url = urlInput.value.trim();
