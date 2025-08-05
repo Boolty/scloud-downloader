@@ -198,6 +198,4 @@ MIT License - siehe [LICENSE](LICENSE) Datei für Details.
 
 ---
 
-**Entwickelt mit ❤️ und Claude Code**
-
 *Hinweis: Dieses Projekt ist nicht offiziell mit SoundCloud verbunden.*
