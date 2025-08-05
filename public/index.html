@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SoundCloud MP3 Downloader</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="sc-header">
+            <div class="header-content">
+                <div>
+                    <h1>🎵 SoundCloud MP3 Downloader</h1>
+                    <p>Gib SoundCloud Links ein und verwalte deine Download-Warteschlange</p>
+                </div>
+                <button id="darkModeToggle" class="dark-mode-toggle" title="Dark Mode umschalten">
+                    <span id="darkModeIcon">🌙</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="sc-content">
+
+        <main>
+            <form id="addToQueueForm">
+                <div class="input-group">
+                    <input 
+                        type="url" 
+                        id="urlInput" 
+                        placeholder="https://soundcloud.com/artist/track" 
+                        required
+                    >
+                    <button type="submit" id="addToQueueBtn">
+                        Zur Liste hinzufügen
+                    </button>
+                </div>
+            </form>
+
+            <div id="queue-section" class="queue-section">
+                <div class="queue-header">
+                    <h3>Download Warteschlange (<span id="queueCount">0</span>)</h3>
+                    <div class="queue-controls">
+                        <button id="downloadAllBtn" class="download-all-btn" disabled>
+                            <span id="downloadAllText">Alle herunterladen</span>
+                            <div id="downloadAllSpinner" class="spinner hidden"></div>
+                        </button>
+                        <button id="downloadCompletedBtn" class="download-completed-btn" disabled>
+                            <span id="downloadCompletedText">Fertige downloaden</span>
+                        </button>
+                        <button id="clearQueueBtn" class="clear-queue-btn">Liste leeren</button>
+                    </div>
+                </div>
+                <div id="queueList" class="queue-list"></div>
+            </div>
+
+            <div id="status" class="status hidden"></div>
+            <div id="downloadLinks" class="download-links"></div>
+        </main>
+
+        <footer>
+            <p>Hinweis: Respektiere die Urheberrechte und lade nur Musik herunter, die du besitzen darfst.</p>
+        </footer>
+        
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

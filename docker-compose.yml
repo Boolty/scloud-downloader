@@ -1,0 +1,22 @@
+# Docker Compose configuration for SoundCloud MP3 Downloader
+
+services:
+  scloud-downloader:
+    build: .
+    ports:
+      - "4554:3000"
+    volumes:
+      - ./downloads:/app/downloads
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    restart: unless-stopped
+    container_name: scloud-downloader
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
