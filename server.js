@@ -151,19 +151,56 @@ app.post('/api/track-info', async (req, res) => {
             const { stdout: playlistInfo } = await execAsync(playlistInfoCommand);
             const [playlistTitle, playlistUploader, playlistCount] = playlistInfo.trim().split('|');
             
-            // Get all tracks from playlist
-            const tracksCommand = `yt-dlp --flat-playlist --print "%(url)s|%(title)s|%(uploader)s" "${url}"`;
-            const { stdout: tracksOutput } = await execAsync(tracksCommand);
+            // Get all tracks from playlist - try different approach
+            const tracksCommand = `yt-dlp --flat-playlist --print "%(url)s" "${url}"`;
+            const { stdout: urlsOutput } = await execAsync(tracksCommand);
             
-            const tracks = tracksOutput.trim().split('\n').map(line => {
-                const [trackUrl, trackTitle, trackUploader] = line.split('|');
-                return {
-                    url: trackUrl,
-                    title: trackTitle,
-                    uploader: trackUploader,
-                    fullTitle: `${trackUploader} - ${trackTitle}`
-                };
-            }).filter(track => track.url && track.title); // Filter out invalid entries
+            console.log('Found URLs:', urlsOutput.substring(0, 300));
+            
+            // Get individual track info for each URL
+            const trackUrls = urlsOutput.trim().split('\n').filter(url => url.trim());
+            const tracks = [];
+            
+            console.log(`Processing ${trackUrls.length} tracks from playlist`);
+            
+            // Process tracks in batches to avoid overwhelming the system
+            const batchSize = 5;
+            for (let i = 0; i < trackUrls.length; i += batchSize) {
+                const batch = trackUrls.slice(i, i + batchSize);
+                
+                const batchPromises = batch.map(async (trackUrl) => {
+                    try {
+                        const trackInfoCommand = `yt-dlp --print "%(title)s|%(uploader)s" "${trackUrl.trim()}"`;
+                        const { stdout: trackInfo } = await execAsync(trackInfoCommand);
+                        const [title, uploader] = trackInfo.trim().split('|');
+                        
+                        if (title && uploader) {
+                            return {
+                                url: trackUrl.trim(),
+                                title: title,
+                                uploader: uploader,
+                                fullTitle: `${uploader} - ${title}`
+                            };
+                        }
+                    } catch (trackError) {
+                        console.log(`Error getting info for track ${trackUrl}:`, trackError.message);
+                        return {
+                            url: trackUrl.trim(),
+                            title: 'Unknown Track',
+                            uploader: 'Unknown Artist',
+                            fullTitle: 'Unknown Artist - Unknown Track'
+                        };
+                    }
+                });
+                
+                const batchResults = await Promise.all(batchPromises);
+                tracks.push(...batchResults.filter(track => track));
+                
+                // Small delay between batches to be nice to SoundCloud
+                if (i + batchSize < trackUrls.length) {
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+            }
             
             res.json({
                 success: true,
