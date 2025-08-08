@@ -1,4 +1,104 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Language management
+    const translations = {
+        de: {
+            subtitle: "Gib SoundCloud Links ein und verwalte deine Download-Warteschlange",
+            url_placeholder: "https://soundcloud.com/artist/track",
+            add_to_queue: "Zur Liste hinzufügen",
+            download_queue: "Download Warteschlange",
+            download_all: "Alle herunterladen",
+            download_completed: "Fertige downloaden",
+            clear_queue: "Liste leeren",
+            copyright_notice: "Hinweis: Respektiere die Urheberrechte und lade nur Musik herunter, die du besitzen darfst.",
+            invalid_url: "Bitte gib eine gültige SoundCloud URL ein.",
+            duplicate_url: "Diese URL ist bereits in der Warteschlange.",
+            loading_info: "📡 Lade Track-Informationen...",
+            added_to_queue: "zur Warteschlange hinzugefügt!",
+            all_downloads_complete: "Alle Downloads abgeschlossen!",
+            clear_queue_confirm: "Möchtest du wirklich alle Items aus der Warteschlange entfernen?",
+            queue_cleared: "Warteschlange geleert.",
+            status_pending: "Wartend",
+            status_downloading: "📥 Wird heruntergeladen...",
+            status_completed: "✅ Abgeschlossen:",
+            status_error: "❌ Fehler:",
+            status_unknown: "Unbekannt",
+            empty_queue: "Keine URLs in der Warteschlange",
+            download: "Download",
+            remove: "Entfernen",
+            downloading_progress: "Wird heruntergeladen...",
+            files_downloading: "Dateien werden heruntergeladen!"
+        },
+        en: {
+            subtitle: "Enter SoundCloud links and manage your download queue",
+            url_placeholder: "https://soundcloud.com/artist/track",
+            add_to_queue: "Add to Queue",
+            download_queue: "Download Queue",
+            download_all: "Download All",
+            download_completed: "Download Completed",
+            clear_queue: "Clear Queue",
+            copyright_notice: "Notice: Respect copyrights and only download music you have the right to own.",
+            invalid_url: "Please enter a valid SoundCloud URL.",
+            duplicate_url: "This URL is already in the queue.",
+            loading_info: "📡 Loading track information...",
+            added_to_queue: "added to queue!",
+            all_downloads_complete: "All downloads completed!",
+            clear_queue_confirm: "Do you really want to remove all items from the queue?",
+            queue_cleared: "Queue cleared.",
+            status_pending: "Pending",
+            status_downloading: "📥 Downloading...",
+            status_completed: "✅ Completed:",
+            status_error: "❌ Error:",
+            status_unknown: "Unknown",
+            empty_queue: "No URLs in queue",
+            download: "Download",
+            remove: "Remove",
+            downloading_progress: "Downloading...",
+            files_downloading: "files are being downloaded!"
+        }
+    };
+
+    let currentLanguage = localStorage.getItem('language') || 'de';
+    
+    // Language toggle
+    const languageToggle = document.getElementById('languageToggle');
+    const languageIcon = document.getElementById('languageIcon');
+    
+    function updateLanguage() {
+        const t = translations[currentLanguage];
+        
+        // Update all elements with data-i18n attribute
+        document.querySelectorAll('[data-i18n]').forEach(element => {
+            const key = element.getAttribute('data-i18n');
+            if (t[key]) {
+                element.textContent = t[key];
+            }
+        });
+        
+        // Update placeholders
+        document.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
+            const key = element.getAttribute('data-i18n-placeholder');
+            if (t[key]) {
+                element.placeholder = t[key];
+            }
+        });
+        
+        // Update language icon
+        languageIcon.textContent = currentLanguage === 'de' ? '🇩🇪' : '🇺🇸';
+        
+        // Update page language attribute
+        document.documentElement.lang = currentLanguage;
+    }
+    
+    languageToggle.addEventListener('click', function() {
+        currentLanguage = currentLanguage === 'de' ? 'en' : 'de';
+        localStorage.setItem('language', currentLanguage);
+        updateLanguage();
+        updateQueueDisplay(); // Refresh queue to apply new language
+    });
+    
+    // Initialize language
+    updateLanguage();
+
     // Dark mode management
     const darkModeToggle = document.getElementById('darkModeToggle');
     const darkModeIcon = document.getElementById('darkModeIcon');
@@ -55,23 +155,23 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const url = urlInput.value.trim();
         if (!url) {
-            showStatus('Bitte gib eine gültige SoundCloud URL ein.', 'error');
+            showStatus(translations[currentLanguage].invalid_url, 'error');
             return;
         }
 
         if (!url.includes('soundcloud.com')) {
-            showStatus('Bitte gib eine gültige SoundCloud URL ein.', 'error');
+            showStatus(translations[currentLanguage].invalid_url, 'error');
             return;
         }
 
         // Check for duplicates
         if (downloadQueue.some(item => item.url === url)) {
-            showStatus('Diese URL ist bereits in der Warteschlange.', 'error');
+            showStatus(translations[currentLanguage].duplicate_url, 'error');
             return;
         }
 
         // Show loading state
-        showStatus('📡 Lade Track-Informationen...', 'info');
+        showStatus(translations[currentLanguage].loading_info, 'info');
         
         // Get track info first
         let trackInfo = null;
@@ -112,7 +212,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         urlInput.value = '';
         const trackName = trackInfo ? trackInfo.fullTitle : 'Track';
-        showStatus(`✅ "${trackName}" zur Warteschlange hinzugefügt!`, 'success');
+        showStatus(`✅ "${trackName}" ${translations[currentLanguage].added_to_queue}`, 'success');
     });
 
     // Download all button
@@ -129,20 +229,20 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         setDownloadAllLoading(false);
-        showStatus(`✅ Alle Downloads abgeschlossen!`, 'success');
+        showStatus(`✅ ${translations[currentLanguage].all_downloads_complete}`, 'success');
         updateDownloadCompletedButton();
     });
 
     // Clear queue button
     clearQueueBtn.addEventListener('click', function() {
-        if (confirm('Möchtest du wirklich alle Items aus der Warteschlange entfernen?')) {
+        if (confirm(translations[currentLanguage].clear_queue_confirm)) {
             downloadQueue = [];
             saveQueue();
             updateQueueDisplay();
             updateDownloadAllButton();
             updateDownloadCompletedButton();
             downloadLinks.innerHTML = '';
-            showStatus('Warteschlange geleert.', 'info');
+            showStatus(translations[currentLanguage].queue_cleared, 'info');
         }
     });
 
@@ -228,7 +328,7 @@ document.addEventListener('DOMContentLoaded', function() {
         queueCount.textContent = downloadQueue.length;
 
         if (downloadQueue.length === 0) {
-            queueList.innerHTML = '<div class="empty-queue">Keine URLs in der Warteschlange</div>';
+            queueList.innerHTML = `<div class="empty-queue">${translations[currentLanguage].empty_queue}</div>`;
             return;
         }
 
@@ -254,11 +354,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="queue-item-actions">
                     ${item.status === 'pending' ? `
                         <button class="download-single-btn" onclick="downloadSingle(${item.id})">
-                            Download
+                            ${translations[currentLanguage].download}
                         </button>
                     ` : ''}
                     <button class="remove-btn" onclick="removeItem(${item.id})">
-                        Entfernen
+                        ${translations[currentLanguage].remove}
                     </button>
                 </div>
             </div>
@@ -267,17 +367,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Get status text
     function getStatusText(item) {
+        const t = translations[currentLanguage];
         switch (item.status) {
             case 'pending':
-                return 'Wartend';
+                return t.status_pending;
             case 'downloading':
-                return item.progressMessage || '📥 Wird heruntergeladen...';
+                return item.progressMessage || t.status_downloading;
             case 'completed':
-                return `✅ Abgeschlossen: ${item.title}`;
+                return `${t.status_completed} ${item.title}`;
             case 'error':
-                return `❌ Fehler: ${item.error}`;
+                return `${t.status_error} ${item.error}`;
             default:
-                return 'Unbekannt';
+                return t.status_unknown;
         }
     }
 
@@ -285,14 +386,15 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateDownloadAllButton() {
         const pendingCount = downloadQueue.filter(item => item.status === 'pending').length;
         downloadAllBtn.disabled = pendingCount === 0;
-        downloadAllText.textContent = pendingCount > 0 ? `Alle herunterladen (${pendingCount})` : 'Alle herunterladen';
+        const t = translations[currentLanguage];
+        downloadAllText.textContent = pendingCount > 0 ? `${t.download_all} (${pendingCount})` : t.download_all;
     }
 
     // Set download all loading state
     function setDownloadAllLoading(loading) {
         downloadAllBtn.disabled = loading;
         if (loading) {
-            downloadAllText.textContent = 'Wird heruntergeladen...';
+            downloadAllText.textContent = translations[currentLanguage].downloading_progress;
             downloadAllSpinner.classList.remove('hidden');
         } else {
             downloadAllSpinner.classList.add('hidden');
@@ -341,14 +443,15 @@ document.addEventListener('DOMContentLoaded', function() {
             document.body.removeChild(link);
         });
         
-        showStatus(`${completedItems.length} Dateien werden heruntergeladen!`, 'success');
+        showStatus(`${completedItems.length} ${translations[currentLanguage].files_downloading}`, 'success');
     });
 
     // Update download completed button
     function updateDownloadCompletedButton() {
         const completedCount = downloadQueue.filter(item => item.status === 'completed').length;
         downloadCompletedBtn.disabled = completedCount === 0;
-        downloadCompletedText.textContent = completedCount > 0 ? `Fertige downloaden (${completedCount})` : 'Fertige downloaden';
+        const t = translations[currentLanguage];
+        downloadCompletedText.textContent = completedCount > 0 ? `${t.download_completed} (${completedCount})` : t.download_completed;
     }
 
     // Save queue to localStorage

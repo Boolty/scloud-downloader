@@ -12,11 +12,16 @@
             <div class="header-content">
                 <div>
                     <h1>🎵 SoundCloud MP3 Downloader</h1>
-                    <p>Gib SoundCloud Links ein und verwalte deine Download-Warteschlange</p>
+                    <p data-i18n="subtitle">Gib SoundCloud Links ein und verwalte deine Download-Warteschlange</p>
                 </div>
-                <button id="darkModeToggle" class="dark-mode-toggle" title="Dark Mode umschalten">
-                    <span id="darkModeIcon">🌙</span>
-                </button>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <button id="languageToggle" class="language-toggle" title="Language / Sprache">
+                        <span id="languageIcon">🇩🇪</span>
+                    </button>
+                    <button id="darkModeToggle" class="dark-mode-toggle" title="Dark Mode umschalten">
+                        <span id="darkModeIcon">🌙</span>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -28,10 +33,11 @@
                     <input 
                         type="url" 
                         id="urlInput" 
+                        data-i18n-placeholder="url_placeholder"
                         placeholder="https://soundcloud.com/artist/track" 
                         required
                     >
-                    <button type="submit" id="addToQueueBtn">
+                    <button type="submit" id="addToQueueBtn" data-i18n="add_to_queue">
                         Zur Liste hinzufügen
                     </button>
                 </div>
@@ -39,16 +45,16 @@
 
             <div id="queue-section" class="queue-section">
                 <div class="queue-header">
-                    <h3>Download Warteschlange (<span id="queueCount">0</span>)</h3>
+                    <h3><span data-i18n="download_queue">Download Warteschlange</span> (<span id="queueCount">0</span>)</h3>
                     <div class="queue-controls">
                         <button id="downloadAllBtn" class="download-all-btn" disabled>
-                            <span id="downloadAllText">Alle herunterladen</span>
+                            <span id="downloadAllText" data-i18n="download_all">Alle herunterladen</span>
                             <div id="downloadAllSpinner" class="spinner hidden"></div>
                         </button>
                         <button id="downloadCompletedBtn" class="download-completed-btn" disabled>
-                            <span id="downloadCompletedText">Fertige downloaden</span>
+                            <span id="downloadCompletedText" data-i18n="download_completed">Fertige downloaden</span>
                         </button>
-                        <button id="clearQueueBtn" class="clear-queue-btn">Liste leeren</button>
+                        <button id="clearQueueBtn" class="clear-queue-btn" data-i18n="clear_queue">Liste leeren</button>
                     </div>
                 </div>
                 <div id="queueList" class="queue-list"></div>
@@ -59,7 +65,7 @@
         </main>
 
         <footer>
-            <p>Hinweis: Respektiere die Urheberrechte und lade nur Musik herunter, die du besitzen darfst.</p>
+            <p data-i18n="copyright_notice">Hinweis: Respektiere die Urheberrechte und lade nur Musik herunter, die du besitzen darfst.</p>
         </footer>
         
         </div>

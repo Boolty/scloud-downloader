@@ -11,6 +11,7 @@ Ein modernes Web-Interface zum Herunterladen von SoundCloud-Tracks als MP3-Datei
 ### 🎨 **Authentisches SoundCloud Design**
 - **Original SoundCloud-Farbschema** mit charakteristischem Orange (#FF5500)
 - **Light & Dark Mode** - genau wie das echte SoundCloud
+- **Mehrsprachigkeit** - Deutsch 🇩🇪 und Englisch 🇺🇸 Support
 - **SoundCloud-Typografie** und authentische UI-Elemente
 - **Responsive Design** für alle Geräte
 
@@ -30,34 +31,111 @@ Ein modernes Web-Interface zum Herunterladen von SoundCloud-Tracks als MP3-Datei
 
 ## 🛠️ Installation & Start
 
-### Mit Docker (Empfohlen)
+### 📋 Voraussetzungen
 
+- **Git** (für Repository klonen)
+- **Docker** und **Docker Compose** (für Container-Installation)
+- **Node.js 18+** (für lokale Installation)
+
+### 🚀 Schnellstart mit Docker (Empfohlen)
+
+#### 1. Repository klonen
 ```bash
-# Repository klonen
 git clone https://github.com/Boolty/scloud-downloader.git
 cd scloud-downloader
+```
 
-# Mit Docker Compose starten
+#### 2. Mit Docker Compose starten
+```bash
+# Container bauen und starten
 docker-compose up --build
 
-# Oder im Hintergrund
+# Oder im Hintergrund ausführen
 docker-compose up --build -d
 ```
 
-### Lokal (Ohne Docker)
+#### 3. Im Browser öffnen
+```
+http://localhost:4554
+```
 
+### 💻 Lokale Installation (Ohne Docker)
+
+#### 1. Repository klonen
 ```bash
-# Dependencies installieren
+git clone https://github.com/Boolty/scloud-downloader.git
+cd scloud-downloader
+```
+
+#### 2. Dependencies installieren
+```bash
 npm install
+```
 
-# yt-dlp installieren (macOS)
+#### 3. yt-dlp installieren
+
+**macOS (mit Homebrew):**
+```bash
 brew install yt-dlp
+```
 
-# yt-dlp installieren (Ubuntu/Debian)
+**Ubuntu/Debian:**
+```bash
+sudo apt update
 sudo apt install yt-dlp
+```
 
-# Server starten
+**Windows:**
+```bash
+# Mit winget
+winget install yt-dlp
+
+# Oder manuell von https://github.com/yt-dlp/yt-dlp/releases
+```
+
+#### 4. Server starten
+```bash
 npm start
+```
+
+#### 5. Im Browser öffnen
+```
+http://localhost:3000
+```
+
+### 🔧 Docker-Installation Schritt für Schritt
+
+#### Docker Desktop installieren
+
+**Windows/macOS:**
+1. Download von [docker.com](https://www.docker.com/products/docker-desktop/)
+2. Installer ausführen und Docker Desktop starten
+
+**Linux (Ubuntu/Debian):**
+```bash
+# Docker installieren
+sudo apt update
+sudo apt install docker.io docker-compose
+
+# Docker Service starten
+sudo systemctl start docker
+sudo systemctl enable docker
+
+# User zu docker Gruppe hinzufügen
+sudo usermod -aG docker $USER
+
+# Neustart oder neue Shell öffnen
+```
+
+#### Projekt ausführen
+```bash
+# In das Projektverzeichnis wechseln
+cd scloud-downloader
+
+# Container starten
+docker-compose up --build
+
+# Im Browser öffnen: http://localhost:4554
 ```
 
 ## 🌐 Verwendung
@@ -69,7 +147,8 @@ npm start
    - **"Alle herunterladen"** - Alle URLs nacheinander
    - **"Download"** - Einzelne URLs sofort
    - **"Fertige downloaden"** - Bereits konvertierte Dateien
-5. **Dark Mode**: Toggle-Button oben rechts im Header
+5. **Sprache wechseln**: Flag-Button (🇩🇪/🇺🇸) oben rechts für Deutsch/Englisch
+6. **Dark Mode**: Toggle-Button (🌙/☀️) oben rechts im Header
 
 ## 📁 Projektstruktur
 
