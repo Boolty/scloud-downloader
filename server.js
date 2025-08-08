@@ -174,12 +174,16 @@ app.post('/api/track-info', async (req, res) => {
                         const { stdout: trackInfo } = await execAsync(trackInfoCommand);
                         const [title, uploader] = trackInfo.trim().split('|');
                         
-                        if (title && uploader) {
+                        // Filter out yt-dlp's "NA" values and empty strings
+                        const cleanTitle = (title && title !== 'NA' && title !== 'null') ? title : null;
+                        const cleanUploader = (uploader && uploader !== 'NA' && uploader !== 'null') ? uploader : null;
+                        
+                        if (cleanTitle || cleanUploader) {
                             return {
                                 url: trackUrl.trim(),
-                                title: title,
-                                uploader: uploader,
-                                fullTitle: `${uploader} - ${title}`
+                                title: cleanTitle,
+                                uploader: cleanUploader,
+                                fullTitle: (cleanUploader && cleanTitle) ? `${cleanUploader} - ${cleanTitle}` : (cleanTitle || cleanUploader || 'Unknown Track')
                             };
                         }
                     } catch (trackError) {
@@ -218,13 +222,18 @@ app.post('/api/track-info', async (req, res) => {
             
             const [title, uploader, duration] = infoOutput.trim().split('|');
             
+            // Filter out yt-dlp's "NA" values and empty strings
+            const cleanTitle = (title && title !== 'NA' && title !== 'null') ? title : null;
+            const cleanUploader = (uploader && uploader !== 'NA' && uploader !== 'null') ? uploader : null;
+            const cleanDuration = (duration && duration !== 'NA' && duration !== 'null') ? duration : null;
+            
             res.json({
                 success: true,
                 isPlaylist: false,
-                title: title,
-                uploader: uploader,
-                duration: duration,
-                fullTitle: `${uploader} - ${title}`
+                title: cleanTitle,
+                uploader: cleanUploader,
+                duration: cleanDuration,
+                fullTitle: (cleanUploader && cleanTitle) ? `${cleanUploader} - ${cleanTitle}` : (cleanTitle || 'Unknown Track')
             });
         }
         

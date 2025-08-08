@@ -265,7 +265,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 songTitle: trackInfo ? trackInfo.title : null,
                 duration: trackInfo ? trackInfo.duration : null,
                 filename: null,
-                error: null
+                error: null,
+                playlistName: null // Explicitly set to null for single tracks
             };
 
             downloadQueue.push(queueItem);
@@ -400,9 +401,9 @@ document.addEventListener('DOMContentLoaded', function() {
         queueList.innerHTML = downloadQueue.map(item => `
             <div class="queue-item ${item.status}" data-id="${item.id}">
                 <div class="queue-item-info">
-                    ${item.title ? `
+                    ${item.title && item.title !== 'NA' && item.title !== 'null' ? `
                         <div class="queue-item-title">${item.title}</div>
-                        ${item.playlistName ? `<div class="queue-item-playlist">📋 ${item.playlistName}</div>` : ''}
+                        ${item.playlistName && item.playlistName !== 'NA' && item.playlistName !== 'null' ? `<div class="queue-item-playlist">📋 ${item.playlistName}</div>` : ''}
                         <div class="queue-item-url">${item.url}</div>
                     ` : `
                         <div class="queue-item-url">${item.url}</div>
