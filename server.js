@@ -140,7 +140,8 @@ app.post('/api/track-info', async (req, res) => {
     
     try {
         // Check if it's a playlist URL based on the original URL structure
-        const isPlaylistUrl = url.includes('/sets/');
+        // URLs like "...?in=user/sets/playlist" are single tracks FROM a playlist, not playlists themselves
+        const isPlaylistUrl = url.includes('/sets/') && !url.includes('?in=');
         
         if (isPlaylistUrl) {
             // Handle playlist
