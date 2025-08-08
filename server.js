@@ -139,10 +139,10 @@ app.post('/api/track-info', async (req, res) => {
     }
     
     try {
-        // Check if it's a playlist URL
-        const isPlaylist = url.includes('/sets/');
+        // Check if it's a playlist URL based on the original URL structure
+        const isPlaylistUrl = url.includes('/sets/');
         
-        if (isPlaylist) {
+        if (isPlaylistUrl) {
             // Handle playlist
             console.log(`Processing playlist: ${url}`);
             
@@ -206,14 +206,48 @@ app.post('/api/track-info', async (req, res) => {
                 }
             }
             
-            res.json({
-                success: true,
-                isPlaylist: true,
-                playlistTitle: playlistTitle,
-                playlistUploader: playlistUploader,
-                playlistCount: parseInt(playlistCount) || tracks.length,
-                tracks: tracks
-            });
+            // Double-check: if we only got 1 track, treat it as a single track
+            if (tracks.length <= 1) {
+                console.log('Playlist URL but only 1 track found - treating as single track');
+                const singleTrack = tracks[0];
+                if (singleTrack) {
+                    res.json({
+                        success: true,
+                        isPlaylist: false,
+                        title: singleTrack.title,
+                        uploader: singleTrack.uploader,
+                        duration: null,
+                        fullTitle: singleTrack.fullTitle
+                    });
+                } else {
+                    // Fallback to original single track logic
+                    const infoCommand = `yt-dlp --print "%(title)s|%(uploader)s|%(duration)s" "${url}"`;
+                    const { stdout: infoOutput } = await execAsync(infoCommand);
+                    
+                    const [title, uploader, duration] = infoOutput.trim().split('|');
+                    const cleanTitle = (title && title !== 'NA' && title !== 'null') ? title : null;
+                    const cleanUploader = (uploader && uploader !== 'NA' && uploader !== 'null') ? uploader : null;
+                    const cleanDuration = (duration && duration !== 'NA' && duration !== 'null') ? duration : null;
+                    
+                    res.json({
+                        success: true,
+                        isPlaylist: false,
+                        title: cleanTitle,
+                        uploader: cleanUploader,
+                        duration: cleanDuration,
+                        fullTitle: (cleanUploader && cleanTitle) ? `${cleanUploader} - ${cleanTitle}` : (cleanTitle || 'Unknown Track')
+                    });
+                }
+            } else {
+                res.json({
+                    success: true,
+                    isPlaylist: true,
+                    playlistTitle: playlistTitle,
+                    playlistUploader: playlistUploader,
+                    playlistCount: parseInt(playlistCount) || tracks.length,
+                    tracks: tracks
+                });
+            }
             
         } else {
             // Handle single track (existing logic)
