@@ -404,6 +404,14 @@ main {
     margin-bottom: 0.25rem;
 }
 
+.queue-item-playlist {
+    font-size: 0.75rem;
+    color: var(--sc-orange);
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+    font-style: italic;
+}
+
 .queue-item-url {
     font-size: 0.8rem;
     color: var(--text-muted);

@@ -126,7 +126,7 @@ async function downloadSoundCloudTrack(url, progressCallback = null) {
     }
 }
 
-// Get track info without downloading
+// Get track info without downloading (supports playlists)
 app.post('/api/track-info', async (req, res) => {
     const { url } = req.body;
     
@@ -139,18 +139,57 @@ app.post('/api/track-info', async (req, res) => {
     }
     
     try {
-        const infoCommand = `yt-dlp --print "%(title)s|%(uploader)s|%(duration)s" "${url}"`;
-        const { stdout: infoOutput } = await execAsync(infoCommand);
+        // Check if it's a playlist URL
+        const isPlaylist = url.includes('/sets/');
         
-        const [title, uploader, duration] = infoOutput.trim().split('|');
-        
-        res.json({
-            success: true,
-            title: title,
-            uploader: uploader,
-            duration: duration,
-            fullTitle: `${uploader} - ${title}`
-        });
+        if (isPlaylist) {
+            // Handle playlist
+            console.log(`Processing playlist: ${url}`);
+            
+            // Get playlist info first
+            const playlistInfoCommand = `yt-dlp --print "%(playlist_title)s|%(uploader)s|%(playlist_count)s" "${url}" | head -1`;
+            const { stdout: playlistInfo } = await execAsync(playlistInfoCommand);
+            const [playlistTitle, playlistUploader, playlistCount] = playlistInfo.trim().split('|');
+            
+            // Get all tracks from playlist
+            const tracksCommand = `yt-dlp --flat-playlist --print "%(url)s|%(title)s|%(uploader)s" "${url}"`;
+            const { stdout: tracksOutput } = await execAsync(tracksCommand);
+            
+            const tracks = tracksOutput.trim().split('\n').map(line => {
+                const [trackUrl, trackTitle, trackUploader] = line.split('|');
+                return {
+                    url: trackUrl,
+                    title: trackTitle,
+                    uploader: trackUploader,
+                    fullTitle: `${trackUploader} - ${trackTitle}`
+                };
+            }).filter(track => track.url && track.title); // Filter out invalid entries
+            
+            res.json({
+                success: true,
+                isPlaylist: true,
+                playlistTitle: playlistTitle,
+                playlistUploader: playlistUploader,
+                playlistCount: parseInt(playlistCount) || tracks.length,
+                tracks: tracks
+            });
+            
+        } else {
+            // Handle single track (existing logic)
+            const infoCommand = `yt-dlp --print "%(title)s|%(uploader)s|%(duration)s" "${url}"`;
+            const { stdout: infoOutput } = await execAsync(infoCommand);
+            
+            const [title, uploader, duration] = infoOutput.trim().split('|');
+            
+            res.json({
+                success: true,
+                isPlaylist: false,
+                title: title,
+                uploader: uploader,
+                duration: duration,
+                fullTitle: `${uploader} - ${title}`
+            });
+        }
         
     } catch (error) {
         console.error('Track Info Error:', error.message);

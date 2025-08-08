@@ -26,7 +26,11 @@ document.addEventListener('DOMContentLoaded', function() {
             download: "Download",
             remove: "Entfernen",
             downloading_progress: "Wird heruntergeladen...",
-            files_downloading: "Dateien werden heruntergeladen!"
+            files_downloading: "Dateien werden heruntergeladen!",
+            playlist_detected: "📋 Playlist erkannt - lade Tracks...",
+            playlist_loading: "Lade Playlist-Tracks...",
+            playlist_added: "Tracks von Playlist hinzugefügt!",
+            playlist_progress: "von"
         },
         en: {
             subtitle: "Enter SoundCloud links and manage your download queue",
@@ -53,7 +57,11 @@ document.addEventListener('DOMContentLoaded', function() {
             download: "Download",
             remove: "Remove",
             downloading_progress: "Downloading...",
-            files_downloading: "files are being downloaded!"
+            files_downloading: "files are being downloaded!",
+            playlist_detected: "📋 Playlist detected - loading tracks...",
+            playlist_loading: "Loading playlist tracks...",
+            playlist_added: "tracks from playlist added!",
+            playlist_progress: "of"
         }
     };
 
@@ -173,7 +181,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Show loading state
         showStatus(translations[currentLanguage].loading_info, 'info');
         
-        // Get track info first
+        // Get track/playlist info first
         let trackInfo = null;
         try {
             const infoResponse = await fetch('/api/track-info', {
@@ -191,28 +199,85 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('Could not fetch track info:', error);
         }
 
-        // Add to queue
-        const queueItem = {
-            id: ++queueIdCounter,
-            url: url,
-            status: 'pending',
-            title: trackInfo ? trackInfo.fullTitle : null,
-            artist: trackInfo ? trackInfo.uploader : null,
-            songTitle: trackInfo ? trackInfo.title : null,
-            duration: trackInfo ? trackInfo.duration : null,
-            filename: null,
-            error: null
-        };
+        // Handle playlist vs single track
+        if (trackInfo && trackInfo.isPlaylist) {
+            // Handle playlist
+            showStatus(translations[currentLanguage].playlist_detected, 'info');
+            
+            let addedCount = 0;
+            let skippedCount = 0;
+            const totalTracks = trackInfo.tracks.length;
+            
+            for (let i = 0; i < trackInfo.tracks.length; i++) {
+                const track = trackInfo.tracks[i];
+                
+                // Check for duplicates
+                if (!downloadQueue.some(item => item.url === track.url)) {
+                    const queueItem = {
+                        id: ++queueIdCounter,
+                        url: track.url,
+                        status: 'pending',
+                        title: track.fullTitle,
+                        artist: track.uploader,
+                        songTitle: track.title,
+                        duration: null,
+                        filename: null,
+                        error: null,
+                        playlistName: trackInfo.playlistTitle
+                    };
+                    
+                    downloadQueue.push(queueItem);
+                    addedCount++;
+                } else {
+                    skippedCount++;
+                }
+                
+                // Update progress
+                const progress = i + 1;
+                showStatus(`${translations[currentLanguage].playlist_loading} (${progress} ${translations[currentLanguage].playlist_progress} ${totalTracks})`, 'info');
+            }
+            
+            saveQueue();
+            updateQueueDisplay();
+            updateDownloadAllButton();
+            updateDownloadCompletedButton();
+            
+            urlInput.value = '';
+            
+            // Show success message
+            let message = `✅ ${addedCount} ${translations[currentLanguage].playlist_added}`;
+            if (skippedCount > 0) {
+                message += ` (${skippedCount} already in queue)`;
+            }
+            if (trackInfo.playlistTitle) {
+                message += ` - "${trackInfo.playlistTitle}"`;
+            }
+            showStatus(message, 'success');
+            
+        } else {
+            // Handle single track (existing logic)
+            const queueItem = {
+                id: ++queueIdCounter,
+                url: url,
+                status: 'pending',
+                title: trackInfo ? trackInfo.fullTitle : null,
+                artist: trackInfo ? trackInfo.uploader : null,
+                songTitle: trackInfo ? trackInfo.title : null,
+                duration: trackInfo ? trackInfo.duration : null,
+                filename: null,
+                error: null
+            };
 
-        downloadQueue.push(queueItem);
-        saveQueue();
-        updateQueueDisplay();
-        updateDownloadAllButton();
-        updateDownloadCompletedButton();
-        
-        urlInput.value = '';
-        const trackName = trackInfo ? trackInfo.fullTitle : 'Track';
-        showStatus(`✅ "${trackName}" ${translations[currentLanguage].added_to_queue}`, 'success');
+            downloadQueue.push(queueItem);
+            saveQueue();
+            updateQueueDisplay();
+            updateDownloadAllButton();
+            updateDownloadCompletedButton();
+            
+            urlInput.value = '';
+            const trackName = trackInfo ? trackInfo.fullTitle : 'Track';
+            showStatus(`✅ "${trackName}" ${translations[currentLanguage].added_to_queue}`, 'success');
+        }
     });
 
     // Download all button
@@ -337,6 +402,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="queue-item-info">
                     ${item.title ? `
                         <div class="queue-item-title">${item.title}</div>
+                        ${item.playlistName ? `<div class="queue-item-playlist">📋 ${item.playlistName}</div>` : ''}
                         <div class="queue-item-url">${item.url}</div>
                     ` : `
                         <div class="queue-item-url">${item.url}</div>

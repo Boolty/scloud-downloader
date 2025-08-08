@@ -17,10 +17,12 @@ Ein modernes Web-Interface zum Herunterladen von SoundCloud-Tracks als MP3-Datei
 
 ### 🎵 **Download-Features**
 - **Warteschlangen-System** - Mehrere URLs sammeln und verwalten
+- **Automatische Playlist-Erkennung** - Ganze SoundCloud-Playlists mit einem Klick
 - **Live-Fortschrittsbalken** mit SoundCloud-Waveform-Animation
 - **Batch-Downloads** - Alle URLs auf einmal herunterladen
 - **Einzelne Downloads** für spezifische Tracks
 - **Automatische MP3-Konvertierung** mit hoher Qualität
+- **Duplicate-Detection** - Verhindert doppelte Downloads
 
 ### 🚀 **Technische Highlights**
 - **Docker-basiert** - Einfache Installation und Deployment
@@ -141,14 +143,17 @@ docker-compose up --build
 ## 🌐 Verwendung
 
 1. **Browser öffnen**: Gehe zu `http://localhost:4554`
-2. **URLs hinzufügen**: SoundCloud-Links in das Eingabefeld kopieren
-3. **Warteschlange aufbauen**: Mehrere URLs zur Liste hinzufügen
-4. **Downloads starten**: 
+2. **URLs hinzufügen**: 
+   - **Einzelne Tracks**: `https://soundcloud.com/artist/song-name`
+   - **Ganze Playlists**: `https://soundcloud.com/user/sets/playlist-name`
+3. **Automatische Erkennung**: System erkennt automatisch Einzeltracks vs. Playlists
+4. **Warteschlange aufbauen**: Mehrere URLs zur Liste hinzufügen
+5. **Downloads starten**: 
    - **"Alle herunterladen"** - Alle URLs nacheinander
    - **"Download"** - Einzelne URLs sofort
    - **"Fertige downloaden"** - Bereits konvertierte Dateien
-5. **Sprache wechseln**: Flag-Button (🇩🇪/🇺🇸) oben rechts für Deutsch/Englisch
-6. **Dark Mode**: Toggle-Button (🌙/☀️) oben rechts im Header
+6. **Sprache wechseln**: Flag-Button (🇩🇪/🇺🇸) oben rechts für Deutsch/Englisch
+7. **Dark Mode**: Toggle-Button (🌙/☀️) oben rechts im Header
 
 ## 📁 Projektstruktur
 
