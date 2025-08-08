@@ -33,35 +33,133 @@ Ein modernes Web-Interface zum Herunterladen von SoundCloud-Tracks als MP3-Datei
 
 ## 🛠️ Installation & Start
 
-### 📋 Voraussetzungen
+## 🚀 Komplette Installations-Anleitung (Schritt für Schritt)
 
-- **Git** (für Repository klonen)
-- **Docker** und **Docker Compose** (für Container-Installation)
-- **Node.js 18+** (für lokale Installation)
+### 📋 Schritt 0: Voraussetzungen installieren
 
-### 🚀 Schnellstart mit Docker (Empfohlen)
+#### Git installieren (falls nicht vorhanden)
 
-#### 1. Repository klonen
+**Windows:**
+1. Download von [git-scm.com](https://git-scm.com/download/win)
+2. Installer ausführen mit Standardeinstellungen
+3. **Git Bash** oder **Command Prompt** öffnen
+
+**macOS:**
+```bash
+# Mit Homebrew (empfohlen)
+brew install git
+
+# Oder Xcode Command Line Tools
+xcode-select --install
+```
+
+**Linux (Ubuntu/Debian):**
+```bash
+sudo apt update
+sudo apt install git
+```
+
+#### Docker Desktop installieren
+
+**Windows/macOS:**
+1. Download von [docker.com](https://www.docker.com/products/docker-desktop/)
+2. Installer ausführen und Docker Desktop starten
+3. **Docker Desktop** muss laufen (Symbol in der Taskleiste)
+
+**Linux (Ubuntu/Debian):**
+```bash
+# Docker installieren
+sudo apt update
+sudo apt install docker.io docker-compose
+
+# Docker Service starten
+sudo systemctl start docker
+sudo systemctl enable docker
+
+# User zu docker Gruppe hinzufügen (wichtig!)
+sudo usermod -aG docker $USER
+
+# Neustart oder neue Shell öffnen
+newgrp docker
+```
+
+### 🎯 Schritt 1: Projekt von GitHub herunterladen
+
+**Terminal/Command Prompt öffnen:**
+- **Windows:** `Git Bash` oder `cmd` 
+- **macOS:** `Terminal` 
+- **Linux:** `Terminal`
+
+**Repository klonen:**
 ```bash
 git clone https://github.com/Boolty/scloud-downloader.git
 cd scloud-downloader
 ```
 
-#### 2. Mit Docker Compose starten
-```bash
-# Container bauen und starten
-docker-compose up --build
+### 🛠️ Schritt 2: Projekt starten
 
-# Oder im Hintergrund ausführen
-docker-compose up --build -d
+**Docker Container bauen und starten:**
+```bash
+docker-compose up --build
 ```
 
-#### 3. Im Browser öffnen
+**⏳ Warten bis diese Meldung erscheint:**
+```
+🎵 SoundCloud Downloader läuft auf http://localhost:3000
+📁 Downloads werden in: /app/downloads gespeichert
+```
+
+### 🌐 Schritt 3: Im Browser öffnen
+
+**Browser öffnen und eingeben:**
 ```
 http://localhost:4554
 ```
 
-### 💻 Lokale Installation (Ohne Docker)
+**✅ Erfolgreich wenn du siehst:**
+- Orange SoundCloud Header mit 🎵 SoundCloud MP3 Downloader
+- URL-Eingabefeld 
+- Language-Toggle (🇩🇪/🇺🇸) und Dark-Mode-Toggle (🌙)
+
+### 🎵 Schritt 4: Erste Verwendung testen
+
+**Einzelnen Track testen:**
+1. SoundCloud-Track-URL einfügen: `https://soundcloud.com/artist/song-name`
+2. "Zur Liste hinzufügen" klicken
+3. "Download" Button klicken
+4. MP3-Download startet automatisch
+
+**Ganze Playlist testen:**
+1. SoundCloud-Playlist-URL einfügen: `https://soundcloud.com/user/sets/playlist-name`  
+2. System erkennt automatisch: "📋 Playlist erkannt - lade Tracks..."
+3. Alle Tracks werden zur Warteschlange hinzugefügt
+4. "Alle herunterladen" klicken
+
+### 🎉 Fertig!
+
+**Das Projekt läuft erfolgreich wenn:**
+- ✅ Website lädt auf http://localhost:4554
+- ✅ Track-URLs können hinzugefügt werden  
+- ✅ Playlists werden automatisch erkannt
+- ✅ Downloads funktionieren
+- ✅ MP3-Dateien werden heruntergeladen
+
+---
+
+## 🚀 Schnellstart für Erfahrene (3 Befehle)
+
+```bash
+git clone https://github.com/Boolty/scloud-downloader.git
+cd scloud-downloader
+docker-compose up --build
+# Öffne: http://localhost:4554
+```
+
+---
+
+## 💻 Alternative: Lokale Installation (Ohne Docker)
+
+**Nur für Entwickler die Docker nicht verwenden möchten**
 
 #### 1. Repository klonen
 ```bash
@@ -105,40 +203,6 @@ npm start
 http://localhost:3000
 ```
 
-### 🔧 Docker-Installation Schritt für Schritt
-
-#### Docker Desktop installieren
-
-**Windows/macOS:**
-1. Download von [docker.com](https://www.docker.com/products/docker-desktop/)
-2. Installer ausführen und Docker Desktop starten
-
-**Linux (Ubuntu/Debian):**
-```bash
-# Docker installieren
-sudo apt update
-sudo apt install docker.io docker-compose
-
-# Docker Service starten
-sudo systemctl start docker
-sudo systemctl enable docker
-
-# User zu docker Gruppe hinzufügen
-sudo usermod -aG docker $USER
-
-# Neustart oder neue Shell öffnen
-```
-
-#### Projekt ausführen
-```bash
-# In das Projektverzeichnis wechseln
-cd scloud-downloader
-
-# Container starten
-docker-compose up --build
-
-# Im Browser öffnen: http://localhost:4554
-```
 
 ## 🌐 Verwendung
 
