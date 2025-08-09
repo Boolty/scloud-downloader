@@ -374,3 +374,4 @@ MIT License - siehe [LICENSE](LICENSE) Datei für Details.
 ---
 
 *Hinweis: Dieses Projekt ist nicht offiziell mit SoundCloud verbunden.*
+🐳 Docker Hub ready - automated builds enabled!
