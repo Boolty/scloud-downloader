@@ -146,7 +146,34 @@ http://localhost:4554
 
 ---
 
-## 🚀 Schnellstart für Erfahrene (3 Befehle)
+## 🐳 Docker Hub Installation (Einfachste Methode)
+
+### 🚀 Ultra-Schnellstart (1 Befehl):
+```bash
+docker run -d -p 4554:3000 --name scloud-downloader boolty/scloud-downloader:latest
+```
+
+**Dann öffnen:** http://localhost:4554
+
+### 📋 Mit docker-compose (Empfohlen):
+```bash
+# docker-compose.hub.yml herunterladen
+curl -O https://raw.githubusercontent.com/Boolty/scloud-downloader/main/docker-compose.hub.yml
+
+# Starten
+docker-compose -f docker-compose.hub.yml up -d
+```
+
+### 🏠 Synology NAS Installation:
+1. **Docker-App** öffnen → **Registry**
+2. Nach `boolty/scloud-downloader` suchen
+3. **Download** → **Image starten**
+4. **Port:** `4554:3000` einstellen
+5. **Fertig!** Zugriff über `http://nas-ip:4554`
+
+---
+
+## 🛠️ Entwickler-Installation (Build from Source)
 
 ```bash
 git clone https://github.com/Boolty/scloud-downloader.git
