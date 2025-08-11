@@ -267,7 +267,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const totalTracks = trackInfo.tracks.length;
             
             // For very large playlists, process in chunks to avoid UI freezing
-            const chunkSize = 50;
+            const chunkSize = 100; // Increased chunk size for better performance
             const chunks = [];
             for (let i = 0; i < trackInfo.tracks.length; i += chunkSize) {
                 chunks.push(trackInfo.tracks.slice(i, i + chunkSize));
@@ -305,16 +305,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 const processedTracks = Math.min((chunkIndex + 1) * chunkSize, totalTracks);
                 showStatus(`${translations[currentLanguage].playlist_loading} (${processedTracks} ${translations[currentLanguage].playlist_progress} ${totalTracks})`, 'info');
                 
-                // Update UI after each chunk to prevent freezing
-                if (chunkIndex % 2 === 0 || chunkIndex === chunks.length - 1) {
+                // Update UI less frequently for very large playlists
+                const shouldUpdateUI = chunkIndex % 3 === 0 || chunkIndex === chunks.length - 1;
+                if (shouldUpdateUI) {
                     saveQueue();
                     updateQueueDisplay();
                     updateDownloadAllButton();
                     updateDownloadCompletedButton();
                     
-                    // Small delay to let UI update
-                    if (chunkIndex < chunks.length - 1) {
-                        await new Promise(resolve => setTimeout(resolve, 100));
+                    // Small delay to let UI update, but only for very large playlists
+                    if (chunkIndex < chunks.length - 1 && totalTracks > 200) {
+                        await new Promise(resolve => setTimeout(resolve, 50)); // Reduced delay
                     }
                 }
             }

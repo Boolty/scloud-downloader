@@ -231,15 +231,15 @@ app.post('/api/track-info', async (req, res) => {
                                     ).join(' ');
                                 }
                                 
-                                // Only try actual metadata for first 5 tracks to see if any work
+                                // Try actual metadata for first few tracks, then skip for performance
                                 let realTitle = null;
                                 let realUploader = null;
                                 
-                                if (j < 5) {
+                                if (j < 3) { // Reduced from 5 to 3 for better performance
                                     try {
                                         console.log(`Trying to get real metadata for track ${j + 1}: ${trackUrl.substring(0, 80)}...`);
                                         const metadataCommand = `yt-dlp --print "%(title)s|%(uploader)s" "${trackUrl}"`;
-                                        const { stdout: metadata } = await execAsync(metadataCommand, { timeout: 8000 });
+                                        const { stdout: metadata } = await execAsync(metadataCommand, { timeout: 5000 }); // Reduced timeout
                                         
                                         if (metadata.trim()) {
                                             const parts = metadata.trim().split('|');
