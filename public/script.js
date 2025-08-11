@@ -30,7 +30,9 @@ document.addEventListener('DOMContentLoaded', function() {
             playlist_detected: "📋 Playlist erkannt - lade Tracks...",
             playlist_loading: "Lade Playlist-Tracks...",
             playlist_added: "Tracks von Playlist hinzugefügt!",
-            playlist_progress: "von"
+            playlist_progress: "von",
+            loading_metadata: "📡 Lade Track-Namen...",
+            metadata_progress: "Verarbeitet"
         },
         en: {
             subtitle: "Enter SoundCloud links and manage your download queue",
@@ -61,7 +63,9 @@ document.addEventListener('DOMContentLoaded', function() {
             playlist_detected: "📋 Playlist detected - loading tracks...",
             playlist_loading: "Loading playlist tracks...",
             playlist_added: "tracks from playlist added!",
-            playlist_progress: "of"
+            playlist_progress: "of",
+            loading_metadata: "📡 Loading track names...",
+            metadata_progress: "Processed"
         }
     };
 
@@ -181,62 +185,141 @@ document.addEventListener('DOMContentLoaded', function() {
         // Show loading state
         showStatus(translations[currentLanguage].loading_info, 'info');
         
-        // Get track/playlist info first
+        // Get track/playlist info first - with longer timeout for large playlists
         let trackInfo = null;
         try {
+            // Set longer timeout for playlists
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minute timeout
+            
+            // Show loading message for metadata
+            if (url.includes('/sets/')) {
+                showStatus(translations[currentLanguage].loading_metadata, 'info');
+            }
+            
             const infoResponse = await fetch('/api/track-info', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ url: url })
+                body: JSON.stringify({ url: url }),
+                signal: controller.signal
             });
+            
+            clearTimeout(timeoutId);
             
             if (infoResponse.ok) {
                 trackInfo = await infoResponse.json();
+                console.log('Received track info:', trackInfo);
+            } else {
+                console.error('Track info request failed:', infoResponse.status, infoResponse.statusText);
+                const errorText = await infoResponse.text();
+                console.error('Error response:', errorText);
             }
         } catch (error) {
-            console.log('Could not fetch track info:', error);
+            if (error.name === 'AbortError') {
+                showStatus('⏱️ Timeout - Playlist zu groß. Versuche es mit einer kleineren Playlist.', 'error');
+                return;
+            }
+            console.error('Could not fetch track info:', error);
+            
+            // Show error details for debugging
+            if (error.message) {
+                console.error('Error details:', error.message);
+            }
+        }
+
+        // Handle error responses
+        if (!trackInfo) {
+            // If we couldn't get track info, still allow the user to add the URL
+            // Maybe it will work during download
+            const queueItem = {
+                id: ++queueIdCounter,
+                url: url,
+                status: 'pending',
+                title: null,
+                artist: null,
+                songTitle: null,
+                duration: null,
+                filename: null,
+                error: null,
+                playlistName: null
+            };
+
+            downloadQueue.push(queueItem);
+            saveQueue();
+            updateQueueDisplay();
+            updateDownloadAllButton();
+            updateDownloadCompletedButton();
+            
+            urlInput.value = '';
+            showStatus('⚠️ URL hinzugefügt (Metadaten konnten nicht geladen werden)', 'info');
+            return;
         }
 
         // Handle playlist vs single track
         if (trackInfo && trackInfo.isPlaylist) {
-            // Handle playlist
+            // Handle playlist - optimized for large playlists
             showStatus(translations[currentLanguage].playlist_detected, 'info');
             
             let addedCount = 0;
             let skippedCount = 0;
             const totalTracks = trackInfo.tracks.length;
             
-            for (let i = 0; i < trackInfo.tracks.length; i++) {
-                const track = trackInfo.tracks[i];
-                
-                // Check for duplicates
-                if (!downloadQueue.some(item => item.url === track.url)) {
-                    const queueItem = {
-                        id: ++queueIdCounter,
-                        url: track.url,
-                        status: 'pending',
-                        title: track.fullTitle,
-                        artist: track.uploader,
-                        songTitle: track.title,
-                        duration: null,
-                        filename: null,
-                        error: null,
-                        playlistName: trackInfo.playlistTitle
-                    };
-                    
-                    downloadQueue.push(queueItem);
-                    addedCount++;
-                } else {
-                    skippedCount++;
-                }
-                
-                // Update progress
-                const progress = i + 1;
-                showStatus(`${translations[currentLanguage].playlist_loading} (${progress} ${translations[currentLanguage].playlist_progress} ${totalTracks})`, 'info');
+            // For very large playlists, process in chunks to avoid UI freezing
+            const chunkSize = 50;
+            const chunks = [];
+            for (let i = 0; i < trackInfo.tracks.length; i += chunkSize) {
+                chunks.push(trackInfo.tracks.slice(i, i + chunkSize));
             }
             
+            for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex++) {
+                const chunk = chunks[chunkIndex];
+                
+                for (let i = 0; i < chunk.length; i++) {
+                    const track = chunk[i];
+                    
+                    // Check for duplicates
+                    if (!downloadQueue.some(item => item.url === track.url)) {
+                        const queueItem = {
+                            id: ++queueIdCounter,
+                            url: track.url,
+                            status: 'pending',
+                            title: track.fullTitle,
+                            artist: track.uploader,
+                            songTitle: track.title,
+                            duration: null,
+                            filename: null,
+                            error: null,
+                            playlistName: trackInfo.playlistTitle
+                        };
+                        
+                        downloadQueue.push(queueItem);
+                        addedCount++;
+                    } else {
+                        skippedCount++;
+                    }
+                }
+                
+                // Update progress after each chunk
+                const processedTracks = Math.min((chunkIndex + 1) * chunkSize, totalTracks);
+                showStatus(`${translations[currentLanguage].playlist_loading} (${processedTracks} ${translations[currentLanguage].playlist_progress} ${totalTracks})`, 'info');
+                
+                // Update UI after each chunk to prevent freezing
+                if (chunkIndex % 2 === 0 || chunkIndex === chunks.length - 1) {
+                    saveQueue();
+                    updateQueueDisplay();
+                    updateDownloadAllButton();
+                    updateDownloadCompletedButton();
+                    
+                    // Small delay to let UI update
+                    if (chunkIndex < chunks.length - 1) {
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                    }
+                }
+            }
+            
+            // Final UI update
             saveQueue();
             updateQueueDisplay();
             updateDownloadAllButton();
@@ -247,10 +330,13 @@ document.addEventListener('DOMContentLoaded', function() {
             // Show success message
             let message = `✅ ${addedCount} ${translations[currentLanguage].playlist_added}`;
             if (skippedCount > 0) {
-                message += ` (${skippedCount} already in queue)`;
+                message += ` (${skippedCount} bereits in der Warteschlange)`;
             }
             if (trackInfo.playlistTitle) {
                 message += ` - "${trackInfo.playlistTitle}"`;
+            }
+            if (totalTracks >= 100) {
+                message += ` (Große Playlist - ${totalTracks} Tracks)`;
             }
             showStatus(message, 'success');
             
@@ -401,8 +487,8 @@ document.addEventListener('DOMContentLoaded', function() {
         queueList.innerHTML = downloadQueue.map(item => `
             <div class="queue-item ${item.status}" data-id="${item.id}">
                 <div class="queue-item-info">
-                    ${item.title && item.title !== 'NA' && item.title !== 'null' ? `
-                        <div class="queue-item-title">${item.title}</div>
+                    ${(item.title && item.title !== 'NA' && item.title !== 'null') || (item.fullTitle && item.fullTitle !== 'NA' && item.fullTitle !== 'null') ? `
+                        <div class="queue-item-title">${item.title || item.fullTitle}</div>
                         ${item.playlistName && item.playlistName !== 'NA' && item.playlistName !== 'null' ? `<div class="queue-item-playlist">📋 ${item.playlistName}</div>` : ''}
                         <div class="queue-item-url">${item.url}</div>
                     ` : `
