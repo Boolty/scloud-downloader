@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', function() {
             download_queue: "Download Warteschlange",
             download_all: "Alle herunterladen",
             download_completed: "Fertige downloaden",
+            download_zip: "📦 Als ZIP",
             clear_queue: "Liste leeren",
             copyright_notice: "Hinweis: Respektiere die Urheberrechte und lade nur Musik herunter, die du besitzen darfst.",
             invalid_url: "Bitte gib eine gültige SoundCloud URL ein.",
@@ -27,6 +28,7 @@ document.addEventListener('DOMContentLoaded', function() {
             remove: "Entfernen",
             downloading_progress: "Wird heruntergeladen...",
             files_downloading: "Dateien werden heruntergeladen!",
+            zip_downloading: "ZIP wird heruntergeladen!",
             playlist_detected: "📋 Playlist erkannt - lade Tracks...",
             playlist_loading: "Lade Playlist-Tracks...",
             playlist_added: "Tracks von Playlist hinzugefügt!",
@@ -41,6 +43,7 @@ document.addEventListener('DOMContentLoaded', function() {
             download_queue: "Download Queue",
             download_all: "Download All",
             download_completed: "Download Completed",
+            download_zip: "📦 As ZIP",
             clear_queue: "Clear Queue",
             copyright_notice: "Notice: Respect copyrights and only download music you have the right to own.",
             invalid_url: "Please enter a valid SoundCloud URL.",
@@ -60,6 +63,7 @@ document.addEventListener('DOMContentLoaded', function() {
             remove: "Remove",
             downloading_progress: "Downloading...",
             files_downloading: "files are being downloaded!",
+            zip_downloading: "ZIP is being downloaded!",
             playlist_detected: "📋 Playlist detected - loading tracks...",
             playlist_loading: "Loading playlist tracks...",
             playlist_added: "tracks from playlist added!",
@@ -152,6 +156,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const downloadAllSpinner = document.getElementById('downloadAllSpinner');
     const downloadCompletedBtn = document.getElementById('downloadCompletedBtn');
     const downloadCompletedText = document.getElementById('downloadCompletedText');
+    const downloadZipBtn = document.getElementById('downloadZipBtn');
+    const downloadZipText = document.getElementById('downloadZipText');
     const clearQueueBtn = document.getElementById('clearQueueBtn');
     const status = document.getElementById('status');
     const downloadLinks = document.getElementById('downloadLinks');
@@ -160,6 +166,7 @@ document.addEventListener('DOMContentLoaded', function() {
     updateQueueDisplay();
     updateDownloadAllButton();
     updateDownloadCompletedButton();
+    updateDownloadZipButton();
 
     // Add to queue form
     addToQueueForm.addEventListener('submit', async function(e) {
@@ -251,6 +258,8 @@ document.addEventListener('DOMContentLoaded', function() {
             updateQueueDisplay();
             updateDownloadAllButton();
             updateDownloadCompletedButton();
+        updateDownloadZipButton();
+            updateDownloadZipButton();
             
             urlInput.value = '';
             showStatus('⚠️ URL hinzugefügt (Metadaten konnten nicht geladen werden)', 'info');
@@ -312,6 +321,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     updateQueueDisplay();
                     updateDownloadAllButton();
                     updateDownloadCompletedButton();
+        updateDownloadZipButton();
+            updateDownloadZipButton();
                     
                     // Small delay to let UI update, but only for very large playlists
                     if (chunkIndex < chunks.length - 1 && totalTracks > 200) {
@@ -325,6 +336,8 @@ document.addEventListener('DOMContentLoaded', function() {
             updateQueueDisplay();
             updateDownloadAllButton();
             updateDownloadCompletedButton();
+        updateDownloadZipButton();
+            updateDownloadZipButton();
             
             urlInput.value = '';
             
@@ -361,6 +374,8 @@ document.addEventListener('DOMContentLoaded', function() {
             updateQueueDisplay();
             updateDownloadAllButton();
             updateDownloadCompletedButton();
+        updateDownloadZipButton();
+            updateDownloadZipButton();
             
             urlInput.value = '';
             const trackName = trackInfo ? trackInfo.fullTitle : 'Track';
@@ -378,12 +393,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
         for (const item of pendingItems) {
             await downloadSingleItem(item);
-            await new Promise(resolve => setTimeout(resolve, 1000)); // Small delay between downloads
+            await new Promise(resolve => setTimeout(resolve, 3000)); // 3 second delay to prevent API overload
         }
 
         setDownloadAllLoading(false);
         showStatus(`✅ ${translations[currentLanguage].all_downloads_complete}`, 'success');
         updateDownloadCompletedButton();
+        updateDownloadZipButton();
     });
 
     // Clear queue button
@@ -394,6 +410,8 @@ document.addEventListener('DOMContentLoaded', function() {
             updateQueueDisplay();
             updateDownloadAllButton();
             updateDownloadCompletedButton();
+        updateDownloadZipButton();
+            updateDownloadZipButton();
             downloadLinks.innerHTML = '';
             showStatus(translations[currentLanguage].queue_cleared, 'info');
         }
@@ -440,6 +458,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     updateQueueDisplay();
                     updateDownloadAllButton();
                     updateDownloadCompletedButton();
+        updateDownloadZipButton();
+            updateDownloadZipButton();
                 }
             };
 
@@ -453,6 +473,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 updateQueueDisplay();
                 updateDownloadAllButton();
                 updateDownloadCompletedButton();
+        updateDownloadZipButton();
+            updateDownloadZipButton();
             };
 
         } catch (error) {
@@ -464,6 +486,8 @@ document.addEventListener('DOMContentLoaded', function() {
             updateQueueDisplay();
             updateDownloadAllButton();
             updateDownloadCompletedButton();
+        updateDownloadZipButton();
+            updateDownloadZipButton();
         }
     }
 
@@ -474,6 +498,7 @@ document.addEventListener('DOMContentLoaded', function() {
         updateQueueDisplay();
         updateDownloadAllButton();
         updateDownloadCompletedButton();
+        updateDownloadZipButton();
     }
 
     // Update queue display
@@ -600,12 +625,37 @@ document.addEventListener('DOMContentLoaded', function() {
         showStatus(`${completedItems.length} ${translations[currentLanguage].files_downloading}`, 'success');
     });
 
+    // Download ZIP button
+    downloadZipBtn.addEventListener('click', function() {
+        const completedCount = downloadQueue.filter(item => item.status === 'completed').length;
+        if (completedCount === 0) return;
+        
+        // Create download link for ZIP
+        const link = document.createElement('a');
+        link.href = '/api/download-zip';
+        link.download = `SoundCloud_Downloads_${new Date().toISOString().split('T')[0]}.zip`;
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        showStatus(`📦 ${translations[currentLanguage].zip_downloading}`, 'success');
+    });
+
     // Update download completed button
     function updateDownloadCompletedButton() {
         const completedCount = downloadQueue.filter(item => item.status === 'completed').length;
         downloadCompletedBtn.disabled = completedCount === 0;
         const t = translations[currentLanguage];
         downloadCompletedText.textContent = completedCount > 0 ? `${t.download_completed} (${completedCount})` : t.download_completed;
+    }
+
+    // Update download ZIP button
+    function updateDownloadZipButton() {
+        const completedCount = downloadQueue.filter(item => item.status === 'completed').length;
+        downloadZipBtn.disabled = completedCount === 0;
+        const t = translations[currentLanguage];
+        downloadZipText.textContent = completedCount > 0 ? `${t.download_zip} (${completedCount})` : t.download_zip;
     }
 
     // Save queue to localStorage

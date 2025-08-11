@@ -8,12 +8,13 @@
     "dev": "nodemon server.js"
   },
   "dependencies": {
+    "archiver": "^6.0.2",
+    "cors": "^2.8.5",
     "express": "^4.18.2",
     "multer": "^1.4.5-lts.1",
-    "cors": "^2.8.5",
     "node-fetch": "^2.6.7",
-    "ytdl-core": "^4.11.5",
-    "scdl-core": "^1.0.0"
+    "scdl-core": "^1.0.0",
+    "ytdl-core": "^4.11.5"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"

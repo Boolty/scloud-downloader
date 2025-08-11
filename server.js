@@ -4,6 +4,7 @@ const fs = require('fs');
 const { exec } = require('child_process');
 const { promisify } = require('util');
 const cors = require('cors');
+const archiver = require('archiver');
 
 const execAsync = promisify(exec);
 const app = express();
@@ -520,6 +521,60 @@ app.get('/api/download/:filename', (req, res) => {
                 fs.unlinkSync(filepath);
                 console.log(`Cleaned up downloaded file: ${filename}`);
             }
+        }, 5000);
+    });
+});
+
+// Download all files as ZIP
+app.get('/api/download-zip', (req, res) => {
+    const files = fs.readdirSync(downloadsDir).filter(file => file.endsWith('.mp3'));
+    
+    if (files.length === 0) {
+        return res.status(404).json({ error: 'Keine MP3-Dateien zum Download verfügbar' });
+    }
+    
+    // Set headers for ZIP download
+    const zipName = `SoundCloud_Downloads_${new Date().toISOString().split('T')[0]}.zip`;
+    res.setHeader('Content-Type', 'application/zip');
+    res.setHeader('Content-Disposition', `attachment; filename="${zipName}"`);
+    
+    // Create ZIP archive
+    const archive = archiver('zip', {
+        zlib: { level: 9 } // Maximum compression
+    });
+    
+    archive.on('error', (err) => {
+        console.error('ZIP Archive Error:', err);
+        res.status(500).json({ error: 'ZIP-Erstellung fehlgeschlagen' });
+    });
+    
+    // Pipe archive to response
+    archive.pipe(res);
+    
+    // Add all MP3 files to ZIP
+    files.forEach(file => {
+        const filepath = path.join(downloadsDir, file);
+        if (fs.existsSync(filepath)) {
+            archive.file(filepath, { name: file });
+            console.log(`Added to ZIP: ${file}`);
+        }
+    });
+    
+    // Finalize the ZIP
+    archive.finalize();
+    
+    console.log(`📦 Created ZIP with ${files.length} files: ${zipName}`);
+    
+    // Clean up files after ZIP is sent
+    archive.on('end', () => {
+        setTimeout(() => {
+            files.forEach(file => {
+                const filepath = path.join(downloadsDir, file);
+                if (fs.existsSync(filepath)) {
+                    fs.unlinkSync(filepath);
+                    console.log(`Cleaned up after ZIP: ${file}`);
+                }
+            });
         }, 5000);
     });
 });

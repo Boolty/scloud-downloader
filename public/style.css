@@ -212,7 +212,7 @@ main {
     transform: translateY(-1px);
 }
 
-#addToQueueBtn, .download-all-btn, .download-completed-btn, .clear-queue-btn {
+#addToQueueBtn, .download-all-btn, .download-completed-btn, .download-zip-btn, .clear-queue-btn {
     padding: 8px 16px;
     background: var(--sc-orange);
     color: white;
@@ -230,7 +230,7 @@ main {
     text-decoration: none;
 }
 
-#addToQueueBtn:hover, .download-all-btn:hover:not(:disabled), .download-completed-btn:hover:not(:disabled), .clear-queue-btn:hover {
+#addToQueueBtn:hover, .download-all-btn:hover:not(:disabled), .download-completed-btn:hover:not(:disabled), .download-zip-btn:hover:not(:disabled), .clear-queue-btn:hover {
     background: var(--sc-orange-hover);
     border-color: var(--sc-orange-hover);
     transform: none;
@@ -247,7 +247,17 @@ main {
     border-color: #00dd00;
 }
 
-.download-completed-btn:disabled, .download-all-btn:disabled {
+.download-zip-btn {
+    background: #9966cc;
+    border-color: #9966cc;
+}
+
+.download-zip-btn:hover:not(:disabled) {
+    background: #aa77dd;
+    border-color: #aa77dd;
+}
+
+.download-completed-btn:disabled, .download-all-btn:disabled, .download-zip-btn:disabled {
     background: #cccccc;
     border-color: #cccccc;
     color: #666666;
