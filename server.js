@@ -198,9 +198,9 @@ app.post('/api/track-info', async (req, res) => {
                     const { stdout: output } = await approaches[i]();
                     
                     if (output && output.trim()) {
-                        console.log(`Approach ${i + 1} worked! Got ${output.split('\n').length} lines`);
-                        
                         const lines = output.trim().split('\n').filter(line => line.trim());
+                        console.log(`Approach ${i + 1} worked! Got ${lines.length} URLs (first few: ${lines.slice(0, 3).join(', ').substring(0, 100)}...)`);
+                        
                         
                         // All approaches now just get URLs, then we try to extract titles from URLs
                         console.log(`Got ${lines.length} URLs, trying to extract track names from URLs...`);
@@ -276,13 +276,18 @@ app.post('/api/track-info', async (req, res) => {
                         
                         if (tracks.length > 0) {
                             approachWorked = true;
-                            console.log(`Successfully extracted ${tracks.length} tracks`);
+                            console.log(`✅ Successfully extracted ${tracks.length} tracks from approach ${i + 1}`);
                             
                             // Try to get playlist title from URL
                             const urlParts = url.split('/');
                             if (urlParts.length > 0) {
                                 playlistTitle = urlParts[urlParts.length - 1].replace(/-/g, ' ');
                             }
+                            
+                            // Break out of the loop since we found tracks
+                            break;
+                        } else {
+                            console.log(`⚠️ Approach ${i + 1} got URLs but no valid tracks were created`);
                         }
                     }
                 } catch (error) {
@@ -293,7 +298,7 @@ app.post('/api/track-info', async (req, res) => {
             
             // Method 2: If all yt-dlp approaches fail, still create tracks from what we know works
             if (!approachWorked) {
-                console.log('All yt-dlp approaches failed, but we know this playlist has 405 tracks from previous log...');
+                console.log('All yt-dlp approaches failed. Trying direct approach without metadata...');
                 
                 // For some SoundCloud playlists, we can try to extract the username and playlist name
                 const urlMatch = url.match(/soundcloud\.com\/([^\/]+)\/sets\/([^\/\?]+)/);
